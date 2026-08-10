@@ -1,0 +1,57 @@
+<div class="grid min-h-screen lg:grid-cols-2">
+  <!-- Signature panel: hidden below lg, this is the one deliberate visual
+       flourish in the whole app — see SKILL notes in styles.scss. -->
+  <div class="relative hidden overflow-hidden bg-ink-900 lg:flex lg:flex-col lg:justify-between">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary-900/40 via-transparent to-transparent"></div>
+
+    <div class="relative z-10 px-12 pt-14">
+      <a routerLink="/" class="inline-flex items-baseline gap-2">
+        <span class="font-display text-2xl font-medium text-white">SecureBank</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-gold-400">Vault</span>
+      </a>
+      <p class="mt-6 max-w-sm font-display text-3xl font-medium leading-snug text-white">
+        Every transaction, accounted for.
+      </p>
+      <p class="mt-4 max-w-sm text-sm text-ink-200">
+        Real-time balances, monitored transfers, and a ledger that never loses its place.
+      </p>
+    </div>
+
+    <!-- Ledger tape: two identical copies stacked so the -50% translateY
+         loop is seamless. Purely decorative, not real account data. -->
+    <div class="relative z-10 mask-fade-y h-72 overflow-hidden border-t border-white/10">
+      <div class="animate-ledger-scroll">
+        @for (block of [0, 1]; track block) {
+          <div>
+            @for (row of ledgerRows; track row.ref) {
+              <div class="flex items-center justify-between border-b border-white/5 px-12 py-3 text-sm">
+                <div class="flex flex-col">
+                  <span class="font-ledger text-ink-300">{{ row.ref }}</span>
+                  <span class="text-xs text-ink-400">{{ row.detail }}</span>
+                </div>
+                <span
+                  class="font-ledger"
+                  [class.text-primary-300]="row.amount.startsWith('+')"
+                  [class.text-ink-300]="row.amount.startsWith('-')"
+                >{{ row.amount.startsWith('+') ? '+' : '−' }} ₹{{ row.amount.slice(1) }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Form panel -->
+  <div class="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-20">
+    <div class="mx-auto w-full max-w-sm">
+      <div class="mb-8 lg:hidden">
+        <a routerLink="/" class="inline-flex items-baseline gap-2">
+          <span class="font-display text-xl font-medium text-ink-900">SecureBank</span>
+          <span class="text-xs uppercase tracking-[0.2em] text-gold-600">Vault</span>
+        </a>
+      </div>
+      <router-outlet />
+    </div>
+  </div>
+</div>

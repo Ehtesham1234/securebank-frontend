@@ -1,0 +1,54 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">KYC status</h1>
+
+<div class="mt-6 rounded-md border border-ink-100 bg-white p-5">
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="text-xs uppercase tracking-wide text-ink-400">{{ documentTypeLabel() }}</div>
+      <div class="font-ledger mt-1 text-sm text-ink-900">{{ kyc().documentNumber }}</div>
+    </div>
+
+    @switch (kyc().status) {
+      @case ('PENDING') {
+        <p-tag value="Under review" severity="warn" icon="pi pi-clock" />
+      }
+      @case ('VERIFIED') {
+        <p-tag value="Verified" severity="success" icon="pi pi-check-circle" />
+      }
+      @case ('REJECTED') {
+        <p-tag value="Rejected" severity="danger" icon="pi pi-times-circle" />
+      }
+    }
+  </div>
+
+  <div class="mt-5">
+    <sb-kyc-document-preview [kycId]="kyc().id" />
+  </div>
+
+  @switch (kyc().status) {
+    @case ('PENDING') {
+      <p class="mt-5 text-sm text-ink-600">
+        Our team is reviewing your documents — this usually takes a day or two. You'll be able to
+        open a savings account as soon as it's approved.
+      </p>
+    }
+    @case ('VERIFIED') {
+      <p class="mt-5 text-sm text-ink-600">
+        You're verified — a savings account and debit card have been created for you.
+      </p>
+      <a routerLink="/dashboard">
+        <p-button label="Go to dashboard" styleClass="mt-4 w-full justify-center" />
+      </a>
+    }
+    @case ('REJECTED') {
+      <div class="mt-5 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p class="font-medium">Your submission was rejected</p>
+        <p class="mt-1">{{ kyc().rejectionReason }}</p>
+      </div>
+      <p-button
+        label="Resubmit documents"
+        styleClass="mt-4 w-full justify-center"
+        (onClick)="resubmit.emit()"
+      />
+    }
+  }
+</div>

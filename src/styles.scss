@@ -1,0 +1,76 @@
+/* ---------------------------------------------------------------------
+ * Layer order matters: primeng must sit between Tailwind's base reset
+ * and its utilities, or utility classes on PrimeNG components get
+ * silently overridden. Keep this order in sync with the `cssLayer.order`
+ * passed to providePrimeNG() in app.config.ts.
+ * ------------------------------------------------------------------- */
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@tailwind components;
+
+@layer tailwind-utilities {
+  @tailwind utilities;
+}
+
+@import 'primeicons/primeicons.css';
+
+/* ---------------------------------------------------------------------
+ * Design system notes (see tailwind.config.js for the token values)
+ *
+ * - Body copy and UI chrome: IBM Plex Sans.
+ * - Headings on auth/marketing surfaces only: Fraunces (font-display),
+ *   used narrowly — never for body text or dense dashboard UI.
+ * - EVERY money amount, account number, card number and OTP digit in
+ *   this app renders in IBM Plex Mono with tabular figures (.font-ledger
+ *   below). That's the one deliberate signature carried through every
+ *   screen — it's what makes columns of numbers actually line up, and
+ *   what gives the app its "ledger" identity instead of looking like a
+ *   generic admin template.
+ * ------------------------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-50 text-ink-900 font-sans antialiased;
+}
+
+.font-ledger {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* Fades the top/bottom edges of the auth-layout ledger tape so scrolling
+   rows appear to emerge from and dissolve into the panel rather than
+   clipping abruptly. */
+.mask-fade-y {
+  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+/* Visible keyboard focus everywhere — never suppressed for mouse users only.
+   Hardcoded to the brand teal rather than theme('colors.primary...') since
+   `primary` is injected at runtime by the tailwindcss-primeui plugin from the
+   PrimeNG preset, not declared in this file's own theme.extend. */
+:focus-visible {
+  outline: 2px solid #2e8971;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

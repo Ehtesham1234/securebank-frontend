@@ -1,0 +1,48 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">Verify your email</h1>
+<p class="mt-1 text-sm text-ink-400">
+  Enter the 6-digit code we sent to <span class="font-ledger">{{ form.controls.email.value }}</span>.
+</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 flex flex-col gap-5">
+  <div>
+    <label for="email" class="mb-1.5 block text-sm font-medium text-ink-600">Email</label>
+    <input pInputText id="email" type="email" formControlName="email" class="w-full" autocomplete="email" />
+  </div>
+
+  <div>
+    <label for="otp" class="mb-1.5 block text-sm font-medium text-ink-600">Verification code</label>
+    <input
+      pInputText
+      id="otp"
+      formControlName="otp"
+      class="font-ledger w-full tracking-widest"
+      inputmode="numeric"
+      maxlength="6"
+      autocomplete="one-time-code"
+    />
+    @if (otpError(); as msg) {
+      <p class="mt-1 text-xs text-red-600">{{ msg }}</p>
+    }
+  </div>
+
+  <p-button
+    type="submit"
+    label="Verify email"
+    styleClass="w-full justify-center"
+    [loading]="submitting()"
+    [disabled]="form.invalid || submitting()"
+  />
+
+  <button
+    type="button"
+    class="text-sm text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-ink-400 disabled:no-underline"
+    [disabled]="resendCooldown() > 0 || resending()"
+    (click)="resend()"
+  >
+    {{ resendCooldown() > 0 ? 'Resend code (' + resendCooldown() + 's)' : 'Resend code' }}
+  </button>
+</form>
+
+<p class="mt-6 text-center text-sm text-ink-400">
+  <a routerLink="/auth/login" class="font-medium text-primary-600 hover:underline">Back to log in</a>
+</p>

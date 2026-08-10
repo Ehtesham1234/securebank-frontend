@@ -1,0 +1,54 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">Log in</h1>
+<p class="mt-1 text-sm text-ink-400">Welcome back to SecureBank.</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 flex flex-col gap-5">
+  <div>
+    <label for="email" class="mb-1.5 block text-sm font-medium text-ink-600">Email</label>
+    <input
+      pInputText
+      id="email"
+      type="email"
+      formControlName="email"
+      class="w-full"
+      autocomplete="email"
+    />
+    @if (form.controls.email.invalid && form.controls.email.touched) {
+      <p class="mt-1 text-xs text-red-600">Enter a valid email address.</p>
+    }
+  </div>
+
+  <div>
+    <div class="mb-1.5 flex items-center justify-between">
+      <label for="password" class="block text-sm font-medium text-ink-600">Password</label>
+      <a routerLink="/auth/forgot-password" class="text-xs text-primary-600 hover:underline">
+        Forgot password?
+      </a>
+    </div>
+    <p-password
+      inputId="password"
+      formControlName="password"
+      [toggleMask]="true"
+      [feedback]="false"
+      styleClass="w-full"
+      inputStyleClass="w-full"
+      autocomplete="current-password"
+    />
+  </div>
+
+  @if (errorMessage(); as msg) {
+    <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ msg }}</p>
+  }
+
+  <p-button
+    type="submit"
+    label="Log in"
+    styleClass="w-full justify-center"
+    [loading]="submitting()"
+    [disabled]="form.invalid || submitting()"
+  />
+</form>
+
+<p class="mt-6 text-center text-sm text-ink-400">
+  New to SecureBank?
+  <a routerLink="/auth/register" class="font-medium text-primary-600 hover:underline">Create an account</a>
+</p>

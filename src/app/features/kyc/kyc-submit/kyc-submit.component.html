@@ -1,0 +1,71 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">Complete your KYC</h1>
+<p class="mt-1 text-sm text-ink-400">
+  We need one government ID to verify your identity before your savings account can be opened.
+</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 flex flex-col gap-5">
+  <div>
+    <label for="documentType" class="mb-1.5 block text-sm font-medium text-ink-600">Document type</label>
+    <p-select
+      inputId="documentType"
+      formControlName="documentType"
+      [options]="documentTypeOptions"
+      optionLabel="label"
+      optionValue="value"
+      styleClass="w-full"
+    />
+  </div>
+
+  <div>
+    <label for="documentNumber" class="mb-1.5 block text-sm font-medium text-ink-600">
+      Document number
+    </label>
+    <input pInputText id="documentNumber" formControlName="documentNumber" class="w-full" />
+    @if (fieldError('documentNumber'); as msg) {
+      <p class="mt-1 text-xs text-red-600">{{ msg }}</p>
+    }
+  </div>
+
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-ink-600">Document upload</label>
+
+    @if (selectedFile(); as file) {
+      <div class="flex items-center justify-between rounded-md border border-ink-100 bg-white px-4 py-3">
+        <div class="flex items-center gap-2 text-sm text-ink-600">
+          <i class="pi pi-file"></i>
+          <span class="font-ledger">{{ file.name }}</span>
+        </div>
+        <button type="button" class="text-ink-400 hover:text-red-600" (click)="removeFile()" aria-label="Remove file">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+    } @else {
+      <label
+        class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-8 text-center transition-colors"
+        [class.border-primary-400]="dragActive()"
+        [class.bg-primary-50]="dragActive()"
+        [class.border-ink-200]="!dragActive()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
+        <i class="pi pi-cloud-upload text-xl text-ink-400"></i>
+        <span class="text-sm text-ink-600">Drag a file here, or click to browse</span>
+        <span class="text-xs text-ink-400">PDF, JPG or PNG · up to 10MB</span>
+        <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)" />
+      </label>
+    }
+
+    @if (fileError(); as msg) {
+      <p class="mt-1 text-xs text-red-600">{{ msg }}</p>
+    }
+  </div>
+
+  <p-button
+    type="submit"
+    label="Submit for review"
+    styleClass="w-full justify-center"
+    [loading]="submitting()"
+    [disabled]="form.invalid || submitting()"
+  />
+</form>

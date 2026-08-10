@@ -1,0 +1,28 @@
+<header
+  class="flex h-16 items-center justify-between border-b border-ink-100 bg-white px-4 sm:px-6"
+>
+  <button
+    type="button"
+    class="rounded-md p-2 text-ink-600 hover:bg-ink-50 lg:hidden"
+    (click)="menuToggle.emit()"
+    aria-label="Toggle navigation"
+  >
+    <i class="pi pi-bars"></i>
+  </button>
+
+  <div class="hidden lg:block"></div>
+
+  <div class="flex items-center gap-3">
+    <span class="font-ledger hidden text-sm text-ink-400 sm:inline">{{ email() }}</span>
+    <button
+      type="button"
+      class="rounded-full"
+      (click)="menu.toggle($event)"
+      aria-haspopup="true"
+      aria-label="Account menu"
+    >
+      <p-avatar [label]="initial()" shape="circle" styleClass="bg-primary-600 !text-white" />
+    </button>
+    <p-menu #menu [model]="menuItems" [popup]="true" />
+  </div>
+</header>

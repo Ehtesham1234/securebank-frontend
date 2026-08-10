@@ -1,0 +1,32 @@
+<div class="flex min-h-screen">
+  <!-- Desktop sidebar -->
+  <aside class="hidden w-64 shrink-0 bg-ink-900 lg:block">
+    <sb-sidebar />
+  </aside>
+
+  <!-- Mobile drawer -->
+  @if (mobileNavOpen()) {
+    <div class="fixed inset-0 z-40 lg:hidden">
+      <div class="absolute inset-0 bg-ink-900/60" (click)="closeMobileNav()"></div>
+      <aside class="absolute inset-y-0 left-0 w-64 bg-ink-900 shadow-xl" (click)="closeMobileNav()">
+        <sb-sidebar />
+      </aside>
+    </div>
+  }
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <sb-topbar (menuToggle)="mobileNavOpen.set(true)" />
+
+    @if (isPendingKyc()) {
+      <div class="flex items-center gap-2 bg-gold-50 px-4 py-2 text-sm text-gold-700 sm:px-6">
+        <i class="pi pi-info-circle"></i>
+        <span>Your account is pending KYC verification. Some features are limited until it's approved.</span>
+        <a routerLink="/kyc" class="ml-auto font-medium underline underline-offset-2">Complete KYC</a>
+      </div>
+    }
+
+    <main class="flex-1 bg-ink-50 p-4 sm:p-6 lg:p-8">
+      <router-outlet />
+    </main>
+  </div>
+</div>

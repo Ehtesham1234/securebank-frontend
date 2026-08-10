@@ -1,0 +1,103 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">KYC review</h1>
+<p class="mt-1 text-sm text-ink-400">Submissions waiting for verification.</p>
+
+<div class="mt-6 overflow-hidden rounded-md border border-ink-100 bg-white">
+  <p-table [value]="service.pending()" [loading]="service.loading()" dataKey="id" styleClass="w-full">
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="text-left">User</th>
+        <th class="text-left">Document</th>
+        <th class="text-left">Number</th>
+        <th class="text-left">Submitted</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-kyc>
+      <tr>
+        <td>User #{{ kyc.userId }}</td>
+        <td>{{ documentTypeLabel(kyc) }}</td>
+        <td class="font-ledger">{{ kyc.documentNumber }}</td>
+        <td>{{ kyc.createdAt | date: 'mediumDate' }}</td>
+        <td class="text-right">
+          <p-button label="Review" size="small" (onClick)="open(kyc)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="py-8 text-center text-sm text-ink-400">No pending submissions.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [visible]="!!selected()"
+  (visibleChange)="!$event && close()"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  header="Review KYC submission"
+>
+  @if (selected(); as kyc) {
+    <div class="text-sm text-ink-600">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="text-xs uppercase tracking-wide text-ink-400">User</div>
+          <div class="mt-0.5">User #{{ kyc.userId }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wide text-ink-400">Document</div>
+          <div class="mt-0.5">{{ documentTypeLabel(kyc) }}</div>
+        </div>
+        <div class="col-span-2">
+          <div class="text-xs uppercase tracking-wide text-ink-400">Document number</div>
+          <div class="font-ledger mt-0.5">{{ kyc.documentNumber }}</div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <sb-kyc-document-preview [kycId]="kyc.id" />
+      </div>
+
+      @if (rejecting()) {
+        <div class="mt-4">
+          <label class="mb-1.5 block text-sm font-medium text-ink-600">Reason for rejection</label>
+          <textarea
+            class="w-full rounded-md border border-ink-200 px-3 py-2 text-sm"
+            rows="3"
+            [value]="rejectReason()"
+            (input)="onReasonInput($event)"
+          ></textarea>
+        </div>
+      }
+    </div>
+
+    <div class="mt-6 flex justify-end gap-2">
+      @if (rejecting()) {
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="cancelReject()"
+          [disabled]="actionInFlight()"
+        />
+        <p-button
+          label="Confirm rejection"
+          severity="danger"
+          (onClick)="confirmReject()"
+          [loading]="actionInFlight()"
+          [disabled]="!rejectReason().trim()"
+        />
+      } @else {
+        <p-button
+          label="Reject"
+          severity="danger"
+          [text]="true"
+          (onClick)="startReject()"
+          [disabled]="actionInFlight()"
+        />
+        <p-button label="Verify" (onClick)="verify()" [loading]="actionInFlight()" />
+      }
+    </div>
+  }
+</p-dialog>

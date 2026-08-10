@@ -1,0 +1,83 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">Create your account</h1>
+<p class="mt-1 text-sm text-ink-400">It takes less than a minute.</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 flex flex-col gap-5">
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label for="firstName" class="mb-1.5 block text-sm font-medium text-ink-600">First name</label>
+      <input pInputText id="firstName" formControlName="firstName" class="w-full" autocomplete="given-name" />
+      @if (fieldError('firstName'); as msg) {
+        <p class="mt-1 text-xs text-red-600">{{ msg }}</p>
+      }
+    </div>
+    <div>
+      <label for="lastName" class="mb-1.5 block text-sm font-medium text-ink-600">Last name</label>
+      <input pInputText id="lastName" formControlName="lastName" class="w-full" autocomplete="family-name" />
+      @if (fieldError('lastName'); as msg) {
+        <p class="mt-1 text-xs text-red-600">{{ msg }}</p>
+      }
+    </div>
+  </div>
+
+  <div>
+    <label for="email" class="mb-1.5 block text-sm font-medium text-ink-600">Email</label>
+    <input
+      pInputText
+      id="email"
+      type="email"
+      formControlName="email"
+      class="w-full"
+      autocomplete="email"
+    />
+    @if (fieldError('email'); as msg) {
+      <p class="mt-1 text-xs text-red-600">{{ msg }}</p>
+    } @else if (form.controls.email.invalid && form.controls.email.touched) {
+      <p class="mt-1 text-xs text-red-600">Enter a valid email address.</p>
+    }
+  </div>
+
+  <div>
+    <label for="password" class="mb-1.5 block text-sm font-medium text-ink-600">Password</label>
+    <p-password
+      inputId="password"
+      formControlName="password"
+      [toggleMask]="true"
+      [feedback]="false"
+      styleClass="w-full"
+      inputStyleClass="w-full"
+      autocomplete="new-password"
+    />
+    <sb-password-checklist [value]="form.controls.password.value" />
+  </div>
+
+  <div>
+    <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-ink-600">
+      Confirm password
+    </label>
+    <p-password
+      inputId="confirmPassword"
+      formControlName="confirmPassword"
+      [toggleMask]="true"
+      [feedback]="false"
+      styleClass="w-full"
+      inputStyleClass="w-full"
+      autocomplete="new-password"
+    />
+    @if (form.controls.confirmPassword.errors?.['mismatch'] && form.controls.confirmPassword.touched) {
+      <p class="mt-1 text-xs text-red-600">Passwords don't match.</p>
+    }
+  </div>
+
+  <p-button
+    type="submit"
+    label="Create account"
+    styleClass="w-full justify-center"
+    [loading]="submitting()"
+    [disabled]="form.invalid || submitting()"
+  />
+</form>
+
+<p class="mt-6 text-center text-sm text-ink-400">
+  Already have an account?
+  <a routerLink="/auth/login" class="font-medium text-primary-600 hover:underline">Log in</a>
+</p>

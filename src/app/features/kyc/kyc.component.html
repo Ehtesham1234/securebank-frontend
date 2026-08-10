@@ -1,0 +1,16 @@
+<div class="mx-auto max-w-xl">
+  @if (!service.checked()) {
+    <div class="flex items-center justify-center py-24">
+      <i class="pi pi-spin pi-spinner text-2xl text-ink-400"></i>
+    </div>
+  } @else if (!service.status() || (service.status()!.status === 'REJECTED' && resubmitting())) {
+    @if (resubmitting()) {
+      <button type="button" class="mb-4 text-sm text-ink-400 hover:text-ink-600" (click)="cancelResubmit()">
+        &larr; Back to rejection details
+      </button>
+    }
+    <sb-kyc-submit />
+  } @else {
+    <sb-kyc-status [kyc]="service.status()!" (resubmit)="startResubmit()" />
+  }
+</div>
