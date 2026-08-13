@@ -75,7 +75,12 @@ export interface VerifyEmailRequest {
  */
 export interface DecodedAccessToken {
   sub: string; // email
-  role: Role;
+  /** Raw value is "ROLE_CUSTOMER" / "ROLE_TELLER" / "ROLE_ADMIN" — a
+   *  Spring-Security-style prefixed authority, NOT a bare Role. Typed as
+   *  `string` rather than `Role` so this stays honest; always read the
+   *  normalized value from AuthService.currentUser().role instead of
+   *  decoding a token and using this field directly. */
+  role: string;
   userId: number;
   userStatus: UserStatus;
   iat: number;

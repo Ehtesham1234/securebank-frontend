@@ -1,45 +1,51 @@
 <div class="mx-auto max-w-3xl">
   <h1 class="font-display text-2xl font-medium text-ink-900">Welcome back</h1>
-  <p class="mt-1 text-sm text-ink-400">
-    This is the Phase 1 shell — auth, routing, and layout are wired up end to end.
-  </p>
 
-  <p-card styleClass="mt-6">
-    <div class="grid gap-4 sm:grid-cols-3">
-      <div>
-        <div class="text-xs uppercase tracking-wide text-ink-400">Signed in as</div>
-        <div class="font-ledger mt-1 text-sm text-ink-900">{{ user()?.email }}</div>
+  @if (isStaff()) {
+    <p class="mt-1 text-sm text-ink-400">
+      Signed in as <span class="font-ledger">{{ user()?.email }}</span>.
+    </p>
+
+    <p-card styleClass="mt-6">
+      <p class="text-sm text-ink-600">
+        There's no dedicated staff dashboard yet — use the sidebar to get to your tools.
+      </p>
+      @if (user()?.role === 'TELLER') {
+        <a routerLink="/teller/kyc">
+          <p-button label="Go to KYC review" styleClass="mt-4" />
+        </a>
+      }
+    </p-card>
+  } @else {
+    <p class="mt-1 text-sm text-ink-400">
+      Auth, KYC, and account security are wired up end to end — accounts and transfers are next.
+    </p>
+
+    <p-card styleClass="mt-6">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <div class="text-xs uppercase tracking-wide text-ink-400">Signed in as</div>
+          <div class="font-ledger mt-1 text-sm text-ink-900">{{ user()?.email }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wide text-ink-400">Status</div>
+          <p-tag
+            class="mt-1"
+            [value]="user()?.userStatus"
+            [severity]="user()?.userStatus === 'ACTIVE' ? 'success' : 'warn'"
+          />
+        </div>
       </div>
-      <div>
-        <div class="text-xs uppercase tracking-wide text-ink-400">Role</div>
-        <p-tag class="mt-1" [value]="user()?.role" severity="info" />
-      </div>
-      <div>
-        <div class="text-xs uppercase tracking-wide text-ink-400">Status</div>
-        <p-tag
-          class="mt-1"
-          [value]="user()?.userStatus"
-          [severity]="user()?.userStatus === 'ACTIVE' ? 'success' : 'warn'"
-        />
-      </div>
+    </p-card>
+
+    <div class="mt-8">
+      <h2 class="text-sm font-medium uppercase tracking-wide text-ink-400">Coming in later phases</h2>
+      <ul class="mt-3 grid gap-3 sm:grid-cols-2">
+        <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">Accounts, cards &amp; statements</li>
+        <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">Transfers, deposits &amp; withdrawals</li>
+        <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">Loans</li>
+        <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">Admin console, AI assistant</li>
+      </ul>
     </div>
-  </p-card>
-
-  <div class="mt-8">
-    <h2 class="text-sm font-medium uppercase tracking-wide text-ink-400">Coming in later phases</h2>
-    <ul class="mt-3 grid gap-3 sm:grid-cols-2">
-      <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">
-        Accounts, cards &amp; statements
-      </li>
-      <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">
-        Transfers, deposits &amp; withdrawals
-      </li>
-      <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">
-        KYC onboarding flow
-      </li>
-      <li class="rounded-md border border-ink-100 bg-white p-4 text-sm text-ink-600">
-        Loans, admin &amp; teller consoles, AI assistant
-      </li>
-    </ul>
-  </div>
+  }
 </div>

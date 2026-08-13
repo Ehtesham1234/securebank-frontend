@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../../core/services/auth.service';
 import { ErrorResponse } from '../../../core/models/api-response.model';
+import { Role, UserStatus } from '../../../core/models/enums';
 
 @Component({
   selector: 'sb-login',
@@ -42,12 +43,8 @@ export class LoginComponent {
     this.auth.login({ email, password }).subscribe({
       next: (authResponse) => {
         const explicitReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-        // No explicit destination, and this customer still needs to
-        // complete KYC — send them straight there instead of a dashboard
-        // they can't do much on yet. A returnUrl always wins, though: if
-        // they were bounced here from a specific page, honor that.
-        const needsKyc = authResponse.role === 'CUSTOMER' && authResponse.userStatus === 'PENDING_KYC';
-        const destination = explicitReturnUrl ?? (needsKyc ? '/kyc' : '/dashboard');
+        const destination =
+          explicitReturnUrl ?? this.defaultDestinationFor(authResponse.role, authResponse.userStatus);
         void this.router.navigateByUrl(destination);
       },
       error: (err: unknown) => {
@@ -67,5 +64,22 @@ export class LoginComponent {
         }
       },
     });
+  }
+
+  /** Where a role lands with no explicit returnUrl — i.e. their most useful
+   *  starting point right now, not just "the dashboard" by default. */
+  private defaultDestinationFor(role: Role, userStatus: UserStatus): string {
+    if (role === 'CUSTOMER' && userStatus === 'PENDING_KYC') {
+      return '/kyc';
+    }
+    if (role === 'TELLER') {
+      // The only task a teller has right now. Revisit if/when tellers get
+      // more than one thing to do and a real staff dashboard makes sense.
+      return '/teller/kyc';
+    }
+    // ADMIN: nothing role-specific built yet, so this falls through to the
+    // generic dashboard like a customer would. Update once an admin
+    // console exists.
+    return '/dashboard';
   }
 }

@@ -165,11 +165,24 @@ export class AuthService {
       return {
         email: payload.sub,
         userId: payload.userId,
-        role: payload.role,
+        role: this.normalizeRole(payload.role),
         userStatus: payload.userStatus,
       };
     } catch {
       return null;
     }
+  }
+
+  /**
+   * The JWT's `role` claim is embedded with a Spring-Security-style
+   * "ROLE_" prefix (e.g. "ROLE_CUSTOMER") — see AuthServiceImpl.login's
+   * jwtService.generateToken call on the backend — but every REST response
+   * body (this same AuthResponse.role field, teller/admin data, etc.) uses
+   * the bare enum value ("CUSTOMER"). Normalize to the bare form here, once,
+   * so the rest of the app (NAV_ITEMS, roleGuard, isStaff checks, ...) only
+   * ever has to compare against one shape.
+   */
+  private normalizeRole(rawRole: string): Role {
+    return rawRole.replace(/^ROLE_/, '') as Role;
   }
 }
