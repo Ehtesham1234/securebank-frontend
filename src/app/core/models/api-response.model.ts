@@ -51,7 +51,7 @@ export type KnownErrorCode =
   | 'BAD_REQUEST' // kyc-service's generic-operation-failed code (KycOperationException)
   | 'CONCURRENT_MODIFICATION'
   | 'INSUFFICIENT_FUNDS'
-  | 'ACCOUNT_OPERATION_ERROR'
+  | 'ACCOUNT_OPERATION_FAILED'
   | 'MALFORMED_REQUEST'
   | 'UNSUPPORTED_MEDIA_TYPE'
   | 'INTERNAL_SERVER_ERROR';

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { activeStatusGuard } from './core/guards/active-status.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -28,6 +29,15 @@ export const routes: Routes = [
             (m) => m.AccountSecurityComponent,
           ),
         title: 'Account security · SecureBank',
+      },
+      {
+        path: 'accounts',
+        canActivate: [roleGuard('CUSTOMER'), activeStatusGuard],
+        loadComponent: () =>
+          import('./features/accounts/accounts-list/accounts-list.component').then(
+            (m) => m.AccountsListComponent,
+          ),
+        title: 'Accounts · SecureBank',
       },
       {
         path: 'kyc',

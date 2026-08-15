@@ -24,4 +24,15 @@ export const API = {
     verifyKyc: (id: number) => `/teller/kyc/${id}/verify`,
     rejectKyc: (id: number) => `/teller/kyc/${id}/reject`,
   },
+  accounts: {
+    apply: '/accounts/apply',
+    mine: '/accounts',
+    byId: (id: number) => `/accounts/${id}`,
+  },
+  transactions: {
+    deposit: (accountId: number) => `/transactions/accounts/${accountId}/deposit`,
+    withdraw: (accountId: number) => `/transactions/accounts/${accountId}/withdraw`,
+    transfer: '/transactions/transfer',
+    history: (accountId: number) => `/transactions/accounts/${accountId}`,
+  },
 } as const;

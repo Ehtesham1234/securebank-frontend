@@ -41,6 +41,7 @@ const TITLES: Partial<Record<KnownErrorCode, string>> = {
   NOT_FOUND: 'Not found',
   CONCURRENT_MODIFICATION: 'Please retry',
   CONFLICT: 'Already exists',
+  ACCOUNT_OPERATION_FAILED: "Can't complete that",
 };
 
 /** Errors a component is expected to catch and render inline — the
