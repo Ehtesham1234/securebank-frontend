@@ -4,7 +4,12 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { API } from '../../core/constants/api-endpoints';
 import { ApiResponse } from '../../core/models/api-response.model';
-import { DepositRequest, TransactionResponse } from '../../core/models/account.model';
+import {
+  DepositRequest,
+  TransactionResponse,
+  TransferRequest,
+  WithdrawRequest,
+} from '../../core/models/account.model';
 import { withIdempotencyKey } from '../../core/interceptors/idempotency.interceptor';
 
 const BASE = environment.apiBaseUrl;
@@ -31,6 +36,27 @@ export class TransactionsService {
         request,
         { context: withIdempotencyKey() },
       )
+      .pipe(map((res) => res.data));
+  }
+  withdraw(accountId: number, request: WithdrawRequest): Observable<TransactionResponse> {
+    return this.http
+      .post<ApiResponse<TransactionResponse>>(
+        `${BASE}${API.transactions.withdraw(accountId)}`,
+        request,
+        { context: withIdempotencyKey() },
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  /** The response represents the SENDER's side of the transfer
+   *  (accountNumber = fromAccountNumber, balanceAfter = the sender's new
+   *  balance) — the recipient gets their own TRANSFER_IN record
+   *  server-side, but that's not something the sender's client sees. */
+  transfer(request: TransferRequest): Observable<TransactionResponse> {
+    return this.http
+      .post<ApiResponse<TransactionResponse>>(`${BASE}${API.transactions.transfer}`, request, {
+        context: withIdempotencyKey(),
+      })
       .pipe(map((res) => res.data));
   }
 }

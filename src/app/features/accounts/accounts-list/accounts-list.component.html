@@ -4,10 +4,16 @@
       <h1 class="font-display text-2xl font-medium text-ink-900">Your accounts</h1>
       <p class="mt-1 text-sm text-ink-400">Savings, current, and fixed deposit accounts.</p>
     </div>
-    @if (!applying()) {
-      <p-button label="New account" icon="pi pi-plus" (onClick)="startApply()" />
-    }
+  <div class="flex gap-2">
+      @if (transferableAccounts().length > 0) {
+        <p-button label="Transfer" icon="pi pi-send" severity="secondary" [outlined]="true" (onClick)="openTransfer()" />
+      }
+      @if (!applying()) {
+        <p-button label="New account" icon="pi pi-plus" (onClick)="startApply()" />
+      }
+    </div>
   </div>
+  
 
   @if (applying()) {
     <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 rounded-md border border-ink-100 bg-white p-5">
@@ -118,8 +124,9 @@
               </div>
             </div>
           } @else if (account.accountStatus === 'ACTIVE') {
-            <div class="mt-4">
+            <div class="mt-4 flex gap-2">
               <p-button label="Deposit" icon="pi pi-arrow-down-left" size="small" [text]="true" (onClick)="openDeposit(account)" />
+              <p-button label="Withdraw" icon="pi pi-arrow-up-right" size="small" [text]="true" (onClick)="openWithdraw(account)" />
             </div>
           }
         </div>
@@ -187,4 +194,129 @@
       </div>
     </form>
   }
+</p-dialog>
+<p-dialog
+  [visible]="!!withdrawTarget()"
+  (visibleChange)="!$event && closeWithdraw()"
+  [modal]="true"
+  [style]="{ width: '24rem' }"
+  header="Withdraw"
+>
+  @if (withdrawTarget(); as account) {
+    <p class="text-sm text-ink-400">
+      From <span class="font-ledger text-ink-600">{{ maskAccountNumber(account.accountNumber) }}</span>
+      · balance <span class="font-ledger">{{ account.balance | currency: 'INR' }}</span>
+    </p>
+
+    <form [formGroup]="withdrawForm" (ngSubmit)="submitWithdraw()" class="mt-4 flex flex-col gap-4">
+      <div>
+        <label for="withdrawAmount" class="mb-1.5 block text-sm font-medium text-ink-600">Amount</label>
+        <p-inputnumber
+          inputId="withdrawAmount"
+          formControlName="amount"
+          mode="currency"
+          currency="INR"
+          [min]="0.01"
+          styleClass="w-full"
+        />
+      </div>
+
+      <div>
+        <label for="withdrawDescription" class="mb-1.5 block text-sm font-medium text-ink-600">
+          Description <span class="text-ink-400">(optional)</span>
+        </label>
+        <input pInputText id="withdrawDescription" formControlName="description" class="w-full" />
+      </div>
+
+      @if (withdrawError(); as msg) {
+        <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ msg }}</p>
+      }
+
+      <div class="mt-1 flex justify-end gap-2">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closeWithdraw()"
+          [disabled]="withdrawSubmitting()"
+        />
+        <p-button
+          type="submit"
+          label="Confirm withdrawal"
+          [loading]="withdrawSubmitting()"
+          [disabled]="withdrawForm.invalid"
+        />
+      </div>
+    </form>
+  }
+</p-dialog>
+
+<p-dialog
+  [visible]="transferring()"
+  (visibleChange)="!$event && closeTransfer()"
+  [modal]="true"
+  [style]="{ width: '26rem' }"
+  header="Transfer"
+>
+  <form [formGroup]="transferForm" (ngSubmit)="submitTransfer()" class="flex flex-col gap-4">
+    <div>
+      <label for="fromAccountNumber" class="mb-1.5 block text-sm font-medium text-ink-600">From</label>
+      <p-select
+        inputId="fromAccountNumber"
+        formControlName="fromAccountNumber"
+        [options]="transferableAccountOptions()"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div>
+      <label for="toAccountNumber" class="mb-1.5 block text-sm font-medium text-ink-600">
+        To (account number)
+      </label>
+      <input pInputText id="toAccountNumber" formControlName="toAccountNumber" class="w-full font-ledger" />
+    </div>
+
+    <div>
+      <label for="transferAmount" class="mb-1.5 block text-sm font-medium text-ink-600">Amount</label>
+      <p-inputnumber
+        inputId="transferAmount"
+        formControlName="amount"
+        mode="currency"
+        currency="INR"
+        [min]="0.01"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div>
+      <label for="transferDescription" class="mb-1.5 block text-sm font-medium text-ink-600">
+        Description <span class="text-ink-400">(optional)</span>
+      </label>
+      <input pInputText id="transferDescription" formControlName="description" class="w-full" />
+    </div>
+
+    @if (transferError(); as msg) {
+      <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ msg }}</p>
+    }
+
+    <div class="mt-1 flex justify-end gap-2">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        (onClick)="closeTransfer()"
+        [disabled]="transferSubmitting()"
+      />
+      <p-button
+        type="submit"
+        label="Send transfer"
+        [loading]="transferSubmitting()"
+        [disabled]="transferForm.invalid"
+      />
+    </div>
+  </form>
 </p-dialog>

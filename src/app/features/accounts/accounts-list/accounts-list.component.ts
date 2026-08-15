@@ -64,7 +64,55 @@ export class AccountsListComponent implements OnInit {
     initialValue: this.form.controls.accountType.value,
   });
   readonly isFixedDeposit = computed(() => this.accountTypeValue() === 'FIXED_DEPOSIT');
+/** Withdraw dialog — same shape as deposit's, duplicated rather than
+   *  shared for now since it's small. Once Cards' pay-bill dialog lands
+   *  (a third near-identical money-movement flow), that's the point where
+   *  extracting a shared dialog component starts paying for itself. */
+  readonly withdrawTarget = signal<AccountResponse | null>(null);
+  readonly withdrawSubmitting = signal(false);
+  readonly withdrawError = signal<string | null>(null);
 
+  readonly withdrawForm = this.fb.nonNullable.group({
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    description: [''],
+  });
+
+  /** Transfer dialog — page-level rather than per-card, since the source
+   *  account is picked inside the dialog rather than implied by which
+   *  card you clicked. */
+  readonly transferring = signal(false);
+  readonly transferSubmitting = signal(false);
+  readonly transferError = signal<string | null>(null);
+
+  readonly transferForm = this.fb.nonNullable.group({
+    fromAccountNumber: ['', Validators.required],
+    toAccountNumber: ['', Validators.required],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    description: [''],
+  });
+
+  /** Only your own ACTIVE, non-FIXED_DEPOSIT accounts can fund a transfer —
+   *  FROZEN/CLOSED/DORMANT accounts are rejected by the backend, and Fixed
+   *  Deposits aren't liquid until maturity, so neither belongs here. (Bug
+   *  fixed here: the comment originally said this but the filter only
+   *  checked accountStatus, not accountType — FDs were selectable and
+   *  failing server-side instead of being hidden client-side.) */
+  readonly transferableAccounts = computed(() =>
+    this.service
+      .accounts()
+      .filter((a) => a.accountStatus === 'ACTIVE' && a.accountType !== 'FIXED_DEPOSIT'),
+  );
+
+  /** p-select needs a flat string to display — accountType/accountNumber
+   *  live on separate fields on AccountResponse, so this composes them
+   *  into one label per option (same {value, label} shape as
+   *  ACCOUNT_TYPE_OPTIONS above). */
+  readonly transferableAccountOptions = computed(() =>
+    this.transferableAccounts().map((a) => ({
+      value: a.accountNumber,
+      label: `${a.accountType} · ${this.maskAccountNumber(a.accountNumber)}`,
+    })),
+  );
   constructor() {
     // Fixed Deposit's amount/duration only matter — and only need to be
     // required — while that account type is selected. Toggling validators
@@ -122,7 +170,105 @@ export class AccountsListComponent implements OnInit {
       return next;
     });
   }
+openWithdraw(account: AccountResponse): void {
+    this.withdrawTarget.set(account);
+    this.withdrawError.set(null);
+    this.withdrawForm.reset({ amount: null, description: '' });
+  }
 
+  closeWithdraw(): void {
+    this.withdrawTarget.set(null);
+  }
+
+  submitWithdraw(): void {
+    const account = this.withdrawTarget();
+    if (!account || this.withdrawForm.invalid) {
+      this.withdrawForm.markAllAsTouched();
+      return;
+    }
+
+    this.withdrawError.set(null);
+    this.withdrawSubmitting.set(true);
+    const { amount, description } = this.withdrawForm.getRawValue();
+
+    this.transactions.withdraw(account.id, { amount: amount!, description: description || undefined }).subscribe({
+      next: (transaction) => {
+        this.withdrawSubmitting.set(false);
+        this.service.applyBalanceUpdate(account.id, transaction.balanceAfter);
+        this.closeWithdraw();
+      },
+      error: (err: unknown) => {
+        this.withdrawSubmitting.set(false);
+        // Unlike deposit, INSUFFICIENT_FUNDS is a very real outcome here —
+        // this is exactly the "low balance" toast/inline-message case.
+        if (err instanceof HttpErrorResponse && err.status === 400) {
+          const body = err.error as ErrorResponse | undefined;
+          if (body?.message && !body.validationErrors) {
+            this.withdrawError.set(body.message);
+          }
+        }
+      },
+    });
+  }
+
+  openTransfer(): void {
+    this.transferring.set(true);
+    this.transferError.set(null);
+    const defaultFrom = this.transferableAccounts()[0]?.accountNumber ?? '';
+    this.transferForm.reset({
+      fromAccountNumber: defaultFrom,
+      toAccountNumber: '',
+      amount: null,
+      description: '',
+    });
+  }
+
+  closeTransfer(): void {
+    this.transferring.set(false);
+  }
+
+  submitTransfer(): void {
+    if (this.transferForm.invalid) {
+      this.transferForm.markAllAsTouched();
+      return;
+    }
+
+    this.transferError.set(null);
+    this.transferSubmitting.set(true);
+    const { fromAccountNumber, toAccountNumber, amount, description } = this.transferForm.getRawValue();
+
+    this.transactions
+      .transfer({
+        fromAccountNumber,
+        toAccountNumber,
+        amount: amount!,
+        description: description || undefined,
+      })
+      .subscribe({
+        next: (transaction) => {
+          this.transferSubmitting.set(false);
+          // The response is the sender's side — resolve which local
+          // account that is by number so we can patch its balance (the
+          // service only takes an id, not a number, for that update).
+          const fromAccount = this.service
+            .accounts()
+            .find((a) => a.accountNumber === transaction.accountNumber);
+          if (fromAccount) {
+            this.service.applyBalanceUpdate(fromAccount.id, transaction.balanceAfter);
+          }
+          this.closeTransfer();
+        },
+        error: (err: unknown) => {
+          this.transferSubmitting.set(false);
+          if (err instanceof HttpErrorResponse && err.status === 400) {
+            const body = err.error as ErrorResponse | undefined;
+            if (body?.message && !body.validationErrors) {
+              this.transferError.set(body.message);
+            }
+          }
+        },
+      });
+  }
   startApply(): void {
     this.applying.set(true);
   }
@@ -207,4 +353,5 @@ openDeposit(account: AccountResponse): void {
         },
       });
   }
+  
 }

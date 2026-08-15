@@ -71,3 +71,20 @@ export interface TransactionResponse {
   relatedAccountNumber: string | null;
   createdAt: string;
 }
+
+/** Mirrors WithdrawRequest — POST /transactions/accounts/{id}/withdraw
+ *  body. Also needs an Idempotency-Key header, same as deposit. */
+export interface WithdrawRequest {
+  amount: number;
+  description?: string;
+}
+
+/** Mirrors TransferRequest — POST /transactions/transfer body. Both
+ *  account fields are account NUMBERS, not internal ids — toAccountNumber
+ *  can belong to any customer, not just accounts you own. */
+export interface TransferRequest {
+  fromAccountNumber: string;
+  toAccountNumber: string;
+  amount: number;
+  description?: string;
+}
