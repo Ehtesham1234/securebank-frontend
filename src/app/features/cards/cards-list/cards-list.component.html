@@ -1,0 +1,147 @@
+<div class="mx-auto max-w-3xl">
+  <h1 class="font-display text-2xl font-medium text-ink-900">Your cards</h1>
+  <p class="mt-1 text-sm text-ink-400">Debit and credit cards linked to your accounts.</p>
+
+  <div class="mt-6 grid gap-4 sm:grid-cols-2">
+    @if (service.loading()) {
+      <div class="col-span-2 flex justify-center py-16">
+        <i class="pi pi-spin pi-spinner text-2xl text-ink-400"></i>
+      </div>
+    } @else if (service.cards().length === 0) {
+      <div class="col-span-2 rounded-md border border-dashed border-ink-200 py-16 text-center text-sm text-ink-400">
+        No cards yet.
+      </div>
+    } @else {
+      @for (card of service.cards(); track card.id) {
+        <div class="rounded-md border border-ink-100 bg-white p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-xs uppercase tracking-wide text-ink-400">
+                {{ card.cardType === 'CREDIT_CARD' ? 'Credit card' : 'Debit card' }}
+              </div>
+              <div class="font-ledger mt-1 text-sm text-ink-600">{{ card.maskedNumber }}</div>
+            </div>
+            <p-tag [value]="card.status" [severity]="statusSeverity(card.status)" />
+          </div>
+
+          <div class="mt-3 flex items-center gap-2 text-xs text-ink-400">
+            <span>CVV:</span>
+            @if (isCvvLoading(card.id)) {
+              <i class="pi pi-spin pi-spinner"></i>
+            } @else if (isCvvRevealed(card.id)) {
+              <span class="font-ledger text-ink-900">{{ getRevealedCvv(card.id) }}</span>
+            } @else {
+              <span class="font-ledger">•••</span>
+            }
+            <button
+              type="button"
+              class="text-ink-400 hover:text-ink-600"
+              (click)="toggleCvv(card.id)"
+              [disabled]="isCvvLoading(card.id)"
+              [attr.aria-label]="isCvvRevealed(card.id) ? 'Hide CVV' : 'Show CVV'"
+            >
+              <i class="pi" [class.pi-eye]="!isCvvRevealed(card.id)" [class.pi-eye-slash]="isCvvRevealed(card.id)"></i>
+            </button>
+          </div>
+
+          @if (card.cardType === 'DEBIT_CARD') {
+            <div class="mt-4 border-t border-ink-100 pt-3 text-xs text-ink-400">
+              Daily limit
+              <span class="font-ledger text-ink-600">{{ card.dailyLimit | currency: 'INR' }}</span>
+            </div>
+          } @else {
+            <div class="mt-4 grid grid-cols-2 gap-3 border-t border-ink-100 pt-3 text-xs text-ink-400">
+              <div>
+                Available credit
+                <div class="font-ledger mt-0.5 text-sm text-ink-900">{{ card.availableCredit | currency: 'INR' }}</div>
+              </div>
+              <div>
+                Outstanding bill
+                <div
+                  class="font-ledger mt-0.5 text-sm"
+                  [class.text-red-600]="(card.outstandingBill ?? 0) > 0"
+                  [class.text-ink-900]="(card.outstandingBill ?? 0) === 0"
+                >
+                  {{ card.outstandingBill | currency: 'INR' }}
+                </div>
+              </div>
+              @if (card.dueDate) {
+                <div class="col-span-2">Due {{ card.dueDate | date: 'mediumDate' }}</div>
+              }
+            </div>
+          }
+
+          <div class="mt-4 flex gap-2">
+            @if (card.status === 'ACTIVE' || card.status === 'BLOCKED') {
+              <p-button
+                [label]="card.status === 'BLOCKED' ? 'Unblock' : 'Block'"
+                [severity]="card.status === 'BLOCKED' ? 'success' : 'danger'"
+                size="small"
+                [text]="true"
+                [loading]="actionInFlight() === card.id"
+                (onClick)="toggleBlock(card)"
+              />
+            }
+            @if (card.cardType === 'CREDIT_CARD' && (card.outstandingBill ?? 0) > 0 && card.status === 'ACTIVE') {
+              <p-button label="Pay bill" size="small" (onClick)="openPayBill(card)" />
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<p-dialog
+  [visible]="!!payBillTarget()"
+  (visibleChange)="!$event && closePayBill()"
+  [modal]="true"
+  [style]="{ width: '24rem' }"
+  header="Pay credit card bill"
+>
+  @if (payBillTarget(); as card) {
+    <p class="text-sm text-ink-400">
+      <span class="font-ledger text-ink-600">{{ card.maskedNumber }}</span> · outstanding
+      <span class="font-ledger">{{ card.outstandingBill | currency: 'INR' }}</span>
+    </p>
+    <p class="mt-1 text-xs text-ink-400">
+      Paid from your active savings account. Minimum payment is 5% of the balance (or ₹100,
+      whichever is greater).
+    </p>
+
+    <form [formGroup]="payBillForm" (ngSubmit)="submitPayBill()" class="mt-4 flex flex-col gap-4">
+      <div>
+        <label for="payBillAmount" class="mb-1.5 block text-sm font-medium text-ink-600">Amount</label>
+        <p-inputnumber
+          inputId="payBillAmount"
+          formControlName="amount"
+          mode="currency"
+          currency="INR"
+          [min]="0.01"
+          styleClass="w-full"
+        />
+      </div>
+
+      @if (payBillError(); as msg) {
+        <p class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ msg }}</p>
+      }
+
+      <div class="mt-1 flex justify-end gap-2">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closePayBill()"
+          [disabled]="payBillSubmitting()"
+        />
+        <p-button
+          type="submit"
+          label="Pay"
+          [loading]="payBillSubmitting()"
+          [disabled]="payBillForm.invalid"
+        />
+      </div>
+    </form>
+  }
+</p-dialog>

@@ -40,6 +40,12 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['CUSTOMER'],
   },
   {
+    label: 'Cards',
+    icon: 'pi pi-credit-card',
+    route: '/cards',
+    roles: ['CUSTOMER'],
+  },
+  {
     label: 'KYC Review',
     icon: 'pi pi-verified',
     route: '/teller/kyc',

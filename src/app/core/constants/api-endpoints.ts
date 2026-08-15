@@ -35,4 +35,11 @@ export const API = {
     transfer: '/transactions/transfer',
     history: (accountId: number) => `/transactions/accounts/${accountId}`,
   },
+  cards: {
+    mine: '/cards',
+    block: (cardId: number) => `/cards/${cardId}/block`,
+    unblock: (cardId: number) => `/cards/${cardId}/unblock`,
+    cvv: (cardId: number) => `/cards/${cardId}/cvv`,
+    payBill: (cardId: number) => `/cards/${cardId}/pay-bill`,
+  },
 } as const;

@@ -40,6 +40,15 @@ export const routes: Routes = [
         title: 'Accounts · SecureBank',
       },
       {
+        path: 'cards',
+        canActivate: [roleGuard('CUSTOMER'), activeStatusGuard],
+        loadComponent: () =>
+          import('./features/cards/cards-list/cards-list.component').then(
+            (m) => m.CardsListComponent,
+          ),
+        title: 'Cards · SecureBank',
+      },
+      {
         path: 'kyc',
         canActivate: [roleGuard('CUSTOMER')],
         loadComponent: () => import('./features/kyc/kyc.component').then((m) => m.KycComponent),
