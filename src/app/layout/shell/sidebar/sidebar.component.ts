@@ -46,10 +46,23 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['CUSTOMER'],
   },
   {
+    label: 'Loans',
+    icon: 'pi pi-money-bill',
+    route: '/loans',
+    roles: ['CUSTOMER'],
+  },
+  {
     label: 'KYC Review',
     icon: 'pi pi-verified',
     route: '/teller/kyc',
     roles: ['TELLER', 'ADMIN'],
+  },
+  {
+    // ADMIN only -- see admin-loans.service.ts for why.
+    label: 'Loan Review',
+    icon: 'pi pi-money-bill',
+    route: '/admin/loans',
+    roles: ['ADMIN'],
   },
   {
     label: 'Security',

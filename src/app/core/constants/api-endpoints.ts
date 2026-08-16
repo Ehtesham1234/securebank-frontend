@@ -42,4 +42,16 @@ export const API = {
     cvv: (cardId: number) => `/cards/${cardId}/cvv`,
     payBill: (cardId: number) => `/cards/${cardId}/pay-bill`,
   },
+  loans: {
+    apply: '/loans/apply',
+    mine: '/loans/my',
+    byId: (id: number) => `/loans/${id}`,
+    payEmi: (id: number) => `/loans/${id}/pay-emi`,
+    approve: (id: number) => `/loans/${id}/approve`,
+    reject: (id: number) => `/loans/${id}/reject`,
+    // ADMIN only — there's no TELLER-scoped listing endpoint for loans the
+    // way /teller/kyc/pending exists for KYC, even though TELLER can
+    // approve/reject by id. See admin-loans.service.ts.
+    byStatus: (status: string) => `/admin/loans/status/${status}`,
+  },
 } as const;

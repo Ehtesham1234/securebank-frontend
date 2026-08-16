@@ -91,17 +91,12 @@ export class AccountsListComponent implements OnInit {
     description: [''],
   });
 
-  /** Only your own ACTIVE, non-FIXED_DEPOSIT accounts can fund a transfer —
-   *  FROZEN/CLOSED/DORMANT accounts are rejected by the backend, and Fixed
-   *  Deposits aren't liquid until maturity, so neither belongs here. (Bug
-   *  fixed here: the comment originally said this but the filter only
-   *  checked accountStatus, not accountType — FDs were selectable and
-   *  failing server-side instead of being hidden client-side.) */
-  readonly transferableAccounts = computed(() =>
-    this.service
-      .accounts()
-      .filter((a) => a.accountStatus === 'ACTIVE' && a.accountType !== 'FIXED_DEPOSIT'),
-  );
+ /** Now sourced from AccountsService.liquidAccounts (ACTIVE,
+   *  non-FIXED_DEPOSIT) — was a locally-duplicated filter here until Loans
+   *  needed the identical logic for its disbursement-account picker; moved
+   *  to the service so both consume one definition instead of two that
+   *  could drift apart. */
+  readonly transferableAccounts = this.service.liquidAccounts;
 
   /** p-select needs a flat string to display — accountType/accountNumber
    *  live on separate fields on AccountResponse, so this composes them

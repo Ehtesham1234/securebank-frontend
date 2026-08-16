@@ -9,6 +9,20 @@ export interface ApiResponse<T> {
   data: T;
   timestamp: string;
 }
+/** Shape of a Spring Data Page<T> as it serializes to JSON — this is what
+ *  `data` holds for any endpoint typed as Page<T> on the backend (loans,
+ *  and any future paginated admin list). Only the fields this app actually
+ *  reads are declared; a real Page has more (pageable, sort, etc.) that
+ *  nothing here needs. */
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // current page, 0-indexed
+  size: number;
+  first: boolean;
+  last: boolean;
+}
 
 /**
  * Mirrors com.ehtesham.securebank.common.response.ErrorResponse.

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable,computed, inject, signal } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { API } from '../../core/constants/api-endpoints';
@@ -17,7 +17,16 @@ export class AccountsService {
 
   private readonly loadingSignal = signal(true);
   readonly loading = this.loadingSignal.asReadonly();
-
+/** Accounts usable as a funding/disbursement source — ACTIVE and not a
+   *  Fixed Deposit (FDs aren't liquid until maturity). Shared by any
+   *  feature that needs "which of my accounts" for something — Transfer's
+   *  from-account and Loans' disbursement-account pickers both read this
+   *  instead of each redefining the same filter. */
+  readonly liquidAccounts = computed(() =>
+    this.accountsSignal().filter(
+      (a) => a.accountStatus === 'ACTIVE' && a.accountType !== 'FIXED_DEPOSIT',
+    ),
+  );
   /** GET /accounts — every account the current customer owns (the savings
    *  account KYC auto-created, plus anything they've applied for since). */
   refresh(): void {

@@ -49,6 +49,26 @@ export const routes: Routes = [
         title: 'Cards · SecureBank',
       },
       {
+        path: 'loans',
+        canActivate: [roleGuard('CUSTOMER'), activeStatusGuard],
+        loadComponent: () =>
+          import('./features/loans/loans-list/loans-list.component').then(
+            (m) => m.LoansListComponent,
+          ),
+        title: 'Loans · SecureBank',
+      },
+      {
+        // ADMIN only -- see admin-loans.service.ts for why TELLER can't
+        // use this despite being allowed to approve/reject by id.
+        path: 'admin/loans',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin-loans/admin-loans-list/admin-loans-list.component').then(
+            (m) => m.AdminLoansListComponent,
+          ),
+        title: 'Loan review · SecureBank',
+      },
+      {
         path: 'kyc',
         canActivate: [roleGuard('CUSTOMER')],
         loadComponent: () => import('./features/kyc/kyc.component').then((m) => m.KycComponent),
