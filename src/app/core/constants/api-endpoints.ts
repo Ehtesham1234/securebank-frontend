@@ -54,4 +54,14 @@ export const API = {
     // approve/reject by id. See admin-loans.service.ts.
     byStatus: (status: string) => `/admin/loans/status/${status}`,
   },
+  adminAccounts: {
+    all: '/admin/accounts',
+    freeze: (id: number) => `/admin/accounts/${id}/freeze`,
+    unfreeze: (id: number) => `/admin/accounts/${id}/unfreeze`,
+    close: (id: number) => `/admin/accounts/${id}/close`,
+  },
+  adminTransactions: {
+    all: '/admin/transactions',
+    reverse: (id: number) => `/admin/transactions/${id}/reverse`,
+  },
 } as const;

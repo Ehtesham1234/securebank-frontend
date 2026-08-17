@@ -65,6 +65,18 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['ADMIN'],
   },
   {
+    label: 'All Accounts',
+    icon: 'pi pi-building',
+    route: '/admin/accounts',
+    roles: ['ADMIN'],
+  },
+  {
+    label: 'All Transactions',
+    icon: 'pi pi-list',
+    route: '/admin/transactions',
+    roles: ['ADMIN'],
+  },
+  {
     label: 'Security',
     icon: 'pi pi-shield',
     route: '/security',
@@ -82,15 +94,26 @@ const NAV_ITEMS: NavItem[] = [
 export class SidebarComponent {
   private readonly auth = inject(AuthService);
 
+/** No "show everything if role unknown" fallback here on purpose — the
+   *  sidebar only ever renders inside the authenticated shell, which
+   *  authGuard already gates on a loaded session, so there's no
+   *  legitimate moment where role should be unknown while this is
+   *  mounted. The one time it briefly WAS unknown here (the instant
+   *  logout clears the session, just before the redirect to /login
+   *  completes) used to fall through the old `!role` fallback and flash
+   *  every nav item — including admin/teller-only ones — for a frame.
+   *  Returning [] for "no user" fixes that: nothing shows during that
+   *  window instead of everything. */
   readonly items = computed(() => {
     const user = this.auth.currentUser();
-    const role = user?.role;
+    if (!user) {
+      return [];
+    }
     return NAV_ITEMS.filter((item) => {
-      const roleMatches = !role || item.roles.includes(role);
-      if (!roleMatches) {
+      if (!item.roles.includes(user.role)) {
         return false;
       }
-      if (item.onlyWhilePendingKyc && user?.userStatus !== 'PENDING_KYC') {
+      if (item.onlyWhilePendingKyc && user.userStatus !== 'PENDING_KYC') {
         return false;
       }
       return true;

@@ -69,6 +69,24 @@ export const routes: Routes = [
         title: 'Loan review · SecureBank',
       },
       {
+        path: 'admin/accounts',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin-accounts/admin-accounts-list/admin-accounts-list.component').then(
+            (m) => m.AdminAccountsListComponent,
+          ),
+        title: 'All accounts · SecureBank',
+      },
+      {
+        path: 'admin/transactions',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import(
+            './features/admin-transactions/admin-transactions-list/admin-transactions-list.component'
+          ).then((m) => m.AdminTransactionsListComponent),
+        title: 'All transactions · SecureBank',
+      },
+      {
         path: 'kyc',
         canActivate: [roleGuard('CUSTOMER')],
         loadComponent: () => import('./features/kyc/kyc.component').then((m) => m.KycComponent),
