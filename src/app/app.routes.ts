@@ -86,6 +86,15 @@ export const routes: Routes = [
           ).then((m) => m.AdminTransactionsListComponent),
         title: 'All transactions · SecureBank',
       },
+            {
+        path: 'assistant',
+        canActivate: [roleGuard('CUSTOMER'), activeStatusGuard],
+        loadComponent: () =>
+          import('./features/ai-assistant/ai-assistant.component').then(
+            (m) => m.AiAssistantComponent,
+          ),
+        title: 'Assistant · SecureBank',
+      },
       {
         path: 'kyc',
         canActivate: [roleGuard('CUSTOMER')],

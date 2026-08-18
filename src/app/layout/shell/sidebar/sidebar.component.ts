@@ -51,6 +51,12 @@ const NAV_ITEMS: NavItem[] = [
     route: '/loans',
     roles: ['CUSTOMER'],
   },
+    {
+    label: 'Assistant',
+    icon: 'pi pi-comments',
+    route: '/assistant',
+    roles: ['CUSTOMER'],
+  },
   {
     label: 'KYC Review',
     icon: 'pi pi-verified',

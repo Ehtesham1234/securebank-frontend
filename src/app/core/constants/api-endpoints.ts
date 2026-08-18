@@ -64,4 +64,10 @@ export const API = {
     all: '/admin/transactions',
     reverse: (id: number) => `/admin/transactions/${id}/reverse`,
   },
+    ai: {
+    // Note: unlike every other endpoint in this file, ai-service's
+    // responses are NOT wrapped in ApiResponse<T> — plain DTOs directly.
+    chatStream: '/ai/chat/stream',
+    summary: '/ai/summary',
+  },
 } as const;
