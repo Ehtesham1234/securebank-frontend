@@ -1,6 +1,28 @@
 <h1 class="font-display text-2xl font-medium text-ink-900">All transactions</h1>
 <p class="mt-1 text-sm text-ink-400">Every transaction, across every account, most recent first.</p>
-
+<div class="mt-4 flex flex-wrap items-center gap-2">
+  <select
+    class="rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-900"
+    [value]="searchField()"
+    (change)="onSearchFieldChange($event)"
+  >
+    <option value="search">Name or email</option>
+    <option value="userId">User ID</option>
+    <option value="transactionId">Transaction ID</option>
+    <option value="transactionRef">Transaction ref</option>
+    <option value="accountNumber">Account number</option>
+  </select>
+  <input
+    pInputText
+    placeholder="Search..."
+    class="w-64"
+    [value]="searchValue()"
+    (input)="onSearchValueInput($event)"
+    (keyup.enter)="submitSearch()"
+  />
+  <p-button label="Search" (onClick)="submitSearch()" />
+  <p-button label="Clear" severity="secondary" [text]="true" (onClick)="clearSearch()" />
+</div>
 <div class="mt-6 overflow-hidden rounded-md border border-ink-100 bg-white">
   <p-table [value]="service.transactions()" [loading]="service.loading()" dataKey="id" styleClass="w-full">
     <ng-template pTemplate="header">

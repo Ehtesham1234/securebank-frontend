@@ -57,6 +57,12 @@ const NAV_ITEMS: NavItem[] = [
     route: '/assistant',
     roles: ['CUSTOMER'],
   },
+    {
+    label: 'All Users',
+    icon: 'pi pi-users',
+    route: '/admin/users',
+    roles: ['ADMIN'],
+  },
   {
     label: 'KYC Review',
     icon: 'pi pi-verified',
@@ -71,6 +77,12 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['ADMIN'],
   },
   {
+    label: 'All Loans',
+    icon: 'pi pi-list',
+    route: '/admin/loans/all',
+    roles: ['ADMIN'],
+  },
+  {
     label: 'All Accounts',
     icon: 'pi pi-building',
     route: '/admin/accounts',
@@ -80,6 +92,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'All Transactions',
     icon: 'pi pi-list',
     route: '/admin/transactions',
+    roles: ['ADMIN'],
+  },
+  {
+    label: 'All Cards',
+    icon: 'pi pi-credit-card',
+    route: '/admin/cards',
     roles: ['ADMIN'],
   },
   {

@@ -28,6 +28,7 @@ export interface LoanReviewRequest {
 /** Mirrors LoanResponse. */
 export interface LoanResponse {
   id: number;
+  userId: number;
   loanRef: string;
   loanType: LoanType;
   status: LoanStatus;

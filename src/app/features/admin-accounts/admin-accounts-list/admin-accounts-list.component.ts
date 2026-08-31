@@ -3,23 +3,25 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { AccountResponse, AccountStatus } from '../../../core/models/account.model';
 import { NotificationService } from '../../../core/services/notification.service';
-import { AdminAccountsService } from '../admin-accounts.service';
+import { AdminAccountSearchField, AdminAccountsService } from '../admin-accounts.service';
 
 @Component({
   selector: 'sb-admin-accounts-list',
   standalone: true,
-  imports: [CurrencyPipe, TableModule, SharedModule, ButtonModule, DialogModule, TagModule],
+  imports: [CurrencyPipe, TableModule, SharedModule, ButtonModule, DialogModule, TagModule ,InputTextModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-accounts-list.component.html',
 })
 export class AdminAccountsListComponent implements OnInit {
   readonly service = inject(AdminAccountsService);
   private readonly notify = inject(NotificationService);
-
+  readonly searchField = signal<AdminAccountSearchField>('search');
+  readonly searchValue = signal('');
   /** accountId currently running a freeze/unfreeze call. */
   readonly actionInFlight = signal<number | null>(null);
 
@@ -33,7 +35,22 @@ export class AdminAccountsListComponent implements OnInit {
   ngOnInit(): void {
     this.service.refresh();
   }
+  onSearchFieldChange(event: Event): void {
+    this.searchField.set((event.target as HTMLSelectElement).value as AdminAccountSearchField);
+  }
 
+  onSearchValueInput(event: Event): void {
+    this.searchValue.set((event.target as HTMLInputElement).value);
+  }
+
+  submitSearch(): void {
+    this.service.refresh(this.searchField(), this.searchValue());
+  }
+
+  clearSearch(): void {
+    this.searchValue.set('');
+    this.service.refresh();
+  }
   statusSeverity(status: AccountStatus): 'success' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case 'ACTIVE':

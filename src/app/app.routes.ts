@@ -69,6 +69,17 @@ export const routes: Routes = [
         title: 'Loan review · SecureBank',
       },
       {
+        // Separate from /admin/loans (the pending-only review queue) --
+        // this browses every loan, any status, bank-wide.
+        path: 'admin/loans/all',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin-loans/admin-all-loans-list/admin-all-loans-list.component').then(
+            (m) => m.AdminAllLoansListComponent,
+          ),
+        title: 'All loans · SecureBank',
+      },
+      {
         path: 'admin/accounts',
         canActivate: [roleGuard('ADMIN')],
         loadComponent: () =>
@@ -94,6 +105,33 @@ export const routes: Routes = [
             (m) => m.AiAssistantComponent,
           ),
         title: 'Assistant · SecureBank',
+      },
+      {
+        path: 'admin/users',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin-users/admin-users-list/admin-users-list.component').then(
+            (m) => m.AdminUsersListComponent,
+          ),
+        title: 'All users · SecureBank',
+      },
+      {
+        path: 'admin/users/:id',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin-users/admin-user-detail/admin-user-detail.component').then(
+            (m) => m.AdminUserDetailComponent,
+          ),
+        title: 'User detail · SecureBank',
+      },
+      {
+        path: 'admin/cards',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin-cards/admin-cards-list/admin-cards-list.component').then(
+            (m) => m.AdminCardsListComponent,
+          ),
+        title: 'All cards · SecureBank',
       },
       {
         path: 'kyc',

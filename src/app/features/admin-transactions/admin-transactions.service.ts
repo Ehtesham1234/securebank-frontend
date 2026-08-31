@@ -7,7 +7,13 @@ import { ApiResponse, PageResponse } from '../../core/models/api-response.model'
 import { TransactionResponse } from '../../core/models/account.model';
 
 const BASE = environment.apiBaseUrl;
-
+/** Mirrors the backend's unambiguous admin/transactions query params. */
+export type AdminTransactionSearchField =
+  | 'userId'
+  | 'transactionId'
+  | 'transactionRef'
+  | 'accountNumber'
+  | 'search';
 @Injectable({ providedIn: 'root' })
 export class AdminTransactionsService {
   private readonly http = inject(HttpClient);
@@ -25,12 +31,17 @@ export class AdminTransactionsService {
   readonly hasMore = this.hasMoreSignal.asReadonly();
 
   private currentPage = 0;
-
-  /** GET /admin/transactions — bank-wide, paginated server-side (default
-   *  page size 20). Same load-more pattern as LoansService. */
-  refresh(): void {
+  private currentField?: AdminTransactionSearchField;
+  private currentValue?: string;
+    /** GET /admin/transactions — bank-wide, paginated server-side (default
+   *  page size 20), or scoped to exactly one field when a search is
+   *  given. Same load-more pattern as LoansService; the search terms
+   *  persist across loadMore() calls via currentField/currentValue. */
+  refresh(field?: AdminTransactionSearchField, value?: string): void {
     this.loadingSignal.set(true);
     this.currentPage = 0;
+    this.currentField = field;
+    this.currentValue = value;
     this.fetchPage(0).subscribe({
       next: (page) => {
         this.transactionsSignal.set(page.content);
@@ -63,16 +74,28 @@ export class AdminTransactionsService {
         tap((updated) => this.patchTransaction(updated)),
       );
   }
-
   private fetchPage(page: number): Observable<PageResponse<TransactionResponse>> {
+    const params: Record<string, string> = { page: page.toString() };
+    if (this.currentField && this.currentValue && this.currentValue.trim()) {
+      params[this.currentField] = this.currentValue.trim();
+    }
     return this.http
-      .get<ApiResponse<PageResponse<TransactionResponse>>>(`${BASE}${API.adminTransactions.all}`, {
-        params: { page: page.toString() },
-      })
+      .get<ApiResponse<PageResponse<TransactionResponse>>>(`${BASE}${API.adminTransactions.all}`, { params })
       .pipe(map((res) => res.data));
   }
 
   private patchTransaction(updated: TransactionResponse): void {
     this.transactionsSignal.update((list) => list.map((t) => (t.id === updated.id ? updated : t)));
+  }
+    /** For the admin user-detail view — just the first page (most recent
+   *  20) for one customer, deliberately not touching transactionsSignal
+   *  (that's reserved for the bank-wide "All Transactions" list this
+   *  service also backs). */
+  getByUserId(userId: number): Observable<TransactionResponse[]> {
+    return this.http
+      .get<ApiResponse<PageResponse<TransactionResponse>>>(`${BASE}${API.adminTransactions.all}`, {
+        params: { userId: userId.toString(), page: '0' },
+      })
+      .pipe(map((res) => res.data.content));
   }
 }

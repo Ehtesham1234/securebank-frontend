@@ -1,0 +1,241 @@
+<p-button label="Back to users" icon="pi pi-arrow-left" [text]="true" (onClick)="goBack()" />
+
+@if (userLoading()) {
+  <div class="mt-8 flex justify-center">
+    <i class="pi pi-spin pi-spinner text-2xl text-ink-400"></i>
+  </div>
+} @else if (userNotFound()) {
+  <div class="mt-8 rounded-md border border-dashed border-ink-200 py-16 text-center text-sm text-ink-400">
+    User not found.
+  </div>
+} @else {
+  @if (user(); as u) {
+    <div class="mt-4 rounded-md border border-ink-100 bg-white p-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <h1 class="font-display text-2xl font-medium text-ink-900">{{ u.firstName }} {{ u.lastName }}</h1>
+          <p class="mt-1 text-sm text-ink-400">{{ u.email }}</p>
+        </div>
+        <div class="flex gap-2">
+          <p-tag [value]="u.role" [severity]="roleSeverity(u.role)" />
+          <p-tag [value]="u.userStatus" [severity]="statusSeverity(u.userStatus)" />
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-ink-400">Email {{ u.emailVerified ? 'verified' : 'not verified' }}</p>
+    </div>
+
+    <!-- Accounts -->
+    <div class="mt-6">
+      <h2 class="text-sm font-medium text-ink-900">Accounts</h2>
+      <div class="mt-2 overflow-hidden rounded-md border border-ink-100 bg-white">
+        @if (accountsLoading()) {
+          <div class="flex justify-center py-8">
+            <i class="pi pi-spin pi-spinner text-xl text-ink-400"></i>
+          </div>
+        } @else if (accounts().length === 0) {
+          <p class="py-8 text-center text-sm text-ink-400">No accounts.</p>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-ink-100 text-left text-xs uppercase tracking-wide text-ink-400">
+                <th class="px-4 py-2">Account number</th>
+                <th class="px-4 py-2">Type</th>
+                <th class="px-4 py-2">Balance</th>
+                <th class="px-4 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (account of accounts(); track account.id) {
+                              <tr class="border-b border-ink-50 last:border-0">
+                <td class="px-4 py-2 font-ledger">{{ account.accountNumber }}</td>
+                <td class="px-4 py-2">{{ account.accountType }}</td>
+                <td class="px-4 py-2 font-ledger">{{ account.balance | currency: 'INR' }}</td>
+                <td class="px-4 py-2">
+                  <p-tag [value]="account.accountStatus" [severity]="accountStatusSeverity(account.accountStatus)" />
+                </td>
+                <td class="px-4 py-2 text-right">
+                  @if (account.accountStatus === 'ACTIVE' || account.accountStatus === 'FROZEN') {
+                    <p-button
+                      [label]="account.accountStatus === 'FROZEN' ? 'Unfreeze' : 'Freeze'"
+                      [severity]="account.accountStatus === 'FROZEN' ? 'success' : 'warn'"
+                      size="small"
+                      [text]="true"
+                      [loading]="accountActionInFlight() === account.id"
+                      (onClick)="toggleAccountFreeze(account)"
+                    />
+                    <p-button
+                      label="Close"
+                      severity="danger"
+                      size="small"
+                      [text]="true"
+                      (onClick)="openCloseConfirm(account)"
+                    />
+                  }
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="mt-6">
+      <h2 class="text-sm font-medium text-ink-900">Recent transactions</h2>
+      <div class="mt-2 overflow-hidden rounded-md border border-ink-100 bg-white">
+        @if (transactionsLoading()) {
+          <div class="flex justify-center py-8">
+            <i class="pi pi-spin pi-spinner text-xl text-ink-400"></i>
+          </div>
+        } @else if (transactions().length === 0) {
+          <p class="py-8 text-center text-sm text-ink-400">No transactions.</p>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-ink-100 text-left text-xs uppercase tracking-wide text-ink-400">
+                <th class="px-4 py-2">Ref</th>
+                <th class="px-4 py-2">Account</th>
+                <th class="px-4 py-2">Type</th>
+                <th class="px-4 py-2">Amount</th>
+                <th class="px-4 py-2">Date</th>
+                <th class="px-4 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (transaction of transactions(); track transaction.id) {
+                <tr class="border-b border-ink-50 last:border-0">
+                  <td class="px-4 py-2 font-ledger">{{ transaction.transactionRef }}</td>
+                  <td class="px-4 py-2 font-ledger">{{ transaction.accountNumber }}</td>
+                  <td class="px-4 py-2">{{ transaction.type.replace('_', ' ') }}</td>
+                  <td class="px-4 py-2 font-ledger">{{ transaction.amount | currency: 'INR' }}</td>
+                  <td class="px-4 py-2">{{ transaction.createdAt | date: 'medium' }}</td>
+                  <td class="px-4 py-2">
+                    <p-tag [value]="transaction.status" [severity]="transactionStatusSeverity(transaction.status)" />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <p class="border-t border-ink-100 px-4 py-2 text-xs text-ink-400">Showing most recent 20.</p>
+        }
+      </div>
+    </div>
+
+    <!-- Loans -->
+    <div class="mt-6">
+      <h2 class="text-sm font-medium text-ink-900">Loans</h2>
+      <div class="mt-2 overflow-hidden rounded-md border border-ink-100 bg-white">
+        @if (loansLoading()) {
+          <div class="flex justify-center py-8">
+            <i class="pi pi-spin pi-spinner text-xl text-ink-400"></i>
+          </div>
+        } @else if (loans().length === 0) {
+          <p class="py-8 text-center text-sm text-ink-400">No loans.</p>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+            <tr class="border-b border-ink-100 text-left text-xs uppercase tracking-wide text-ink-400">
+              <th class="px-4 py-2">Account number</th>
+              <th class="px-4 py-2">Type</th>
+              <th class="px-4 py-2">Balance</th>
+              <th class="px-4 py-2">Status</th>
+              <th class="px-4 py-2"></th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (loan of loans(); track loan.id) {
+                <tr class="border-b border-ink-50 last:border-0">
+                  <td class="px-4 py-2 font-ledger">{{ loan.loanRef }}</td>
+                  <td class="px-4 py-2">{{ loan.loanType.replace('_', ' ') }}</td>
+                  <td class="px-4 py-2 font-ledger">{{ loan.principalAmount | currency: 'INR' }}</td>
+                  <td class="px-4 py-2">
+                    <p-tag [value]="loan.status" [severity]="loanStatusSeverity(loan.status)" />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    <div class="mt-6">
+    <h2 class="text-sm font-medium text-ink-900">Cards</h2>
+    <div class="mt-2 overflow-hidden rounded-md border border-ink-100 bg-white">
+      @if (cardsLoading()) {
+        <div class="flex justify-center py-8">
+          <i class="pi pi-spin pi-spinner text-xl text-ink-400"></i>
+        </div>
+      } @else if (cards().length === 0) {
+        <p class="py-8 text-center text-sm text-ink-400">No cards.</p>
+      } @else {
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-ink-100 text-left text-xs uppercase tracking-wide text-ink-400">
+              <th class="px-4 py-2">Card number</th>
+              <th class="px-4 py-2">Type</th>
+              <th class="px-4 py-2">Status</th>
+              <th class="px-4 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (card of cards(); track card.id) {
+              <tr class="border-b border-ink-50 last:border-0">
+                <td class="px-4 py-2 font-ledger">{{ card.maskedNumber }}</td>
+                <td class="px-4 py-2">{{ card.cardType === 'CREDIT_CARD' ? 'Credit' : 'Debit' }}</td>
+                <td class="px-4 py-2">
+                  <p-tag [value]="card.status" [severity]="cardStatusSeverity(card.status)" />
+                </td>
+                <td class="px-4 py-2 text-right">
+                  @if (card.status === 'ACTIVE' || card.status === 'BLOCKED') {
+                    <p-button
+                      [label]="card.status === 'BLOCKED' ? 'Unblock' : 'Block'"
+                      [severity]="card.status === 'BLOCKED' ? 'success' : 'warn'"
+                      size="small"
+                      [text]="true"
+                      [loading]="cardActionInFlight() === card.id"
+                      (onClick)="toggleCardBlock(card)"
+                    />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+  }
+  
+<p-dialog
+  [visible]="!!closeTarget()"
+  (visibleChange)="!$event && cancelClose()"
+  [modal]="true"
+  [style]="{ width: '24rem' }"
+  header="Close account"
+>
+  @if (closeTarget(); as account) {
+    <p class="text-sm text-ink-600">
+      Close account <span class="font-ledger">{{ account.accountNumber }}</span>?
+    </p>
+    <p class="mt-2 text-sm text-red-600">This can't be undone.</p>
+
+    <div class="mt-5 flex justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        (onClick)="cancelClose()"
+        [disabled]="closeSubmitting()"
+      />
+      <p-button
+        label="Close account"
+        severity="danger"
+        [loading]="closeSubmitting()"
+        (onClick)="confirmClose()"
+      />
+    </div>
+  }
+</p-dialog>
+}

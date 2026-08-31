@@ -17,6 +17,7 @@ export type CardStatus = 'ACTIVE' | 'BLOCKED' | 'CANCELLED' | 'EXPIRED';
  */
 export interface CardResponse {
   id: number;
+  userId: number;
   maskedNumber: string;
   cardType: CardType;
   status: CardStatus;

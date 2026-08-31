@@ -7,6 +7,10 @@ import { ApiResponse } from '../../core/models/api-response.model';
 import { AccountResponse } from '../../core/models/account.model';
 
 const BASE = environment.apiBaseUrl;
+/** Mirrors the backend's now-unambiguous admin/accounts query params —
+ *  each one means exactly one thing, no overlap between "this account's
+ *  own id/number" and "the owning user's id/name". */
+export type AdminAccountSearchField = 'userId' | 'accountId' | 'accountNumber' | 'search';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAccountsService {
@@ -18,14 +22,18 @@ export class AdminAccountsService {
   private readonly loadingSignal = signal(true);
   readonly loading = this.loadingSignal.asReadonly();
 
-  /** GET /admin/accounts — every account across every customer, bank-wide.
-   *  Reuses the same AccountResponse model as the customer-facing
-   *  accounts feature; the shape is identical, only who's allowed to call
-   *  it differs. */
-  refresh(): void {
+  /** GET /admin/accounts — every account across every customer, bank-wide,
+   *  or scoped to exactly one field when a search is given. field/value
+   *  must both be present to filter — calling with no args (or clearing
+   *  the search) returns everything, same as before. */
+  refresh(field?: AdminAccountSearchField, value?: string): void {
     this.loadingSignal.set(true);
+    const params: Record<string, string> = {};
+    if (field && value && value.trim()) {
+      params[field] = value.trim();
+    }
     this.http
-      .get<ApiResponse<AccountResponse[]>>(`${BASE}${API.adminAccounts.all}`)
+      .get<ApiResponse<AccountResponse[]>>(`${BASE}${API.adminAccounts.all}`, { params })
       .pipe(map((res) => res.data))
       .subscribe({
         next: (list) => {
@@ -65,5 +73,15 @@ export class AdminAccountsService {
 
   private patchAccount(updated: AccountResponse): void {
     this.accountsSignal.update((list) => list.map((a) => (a.id === updated.id ? updated : a)));
+  }
+    /** For the admin user-detail view — a plain fetch scoped to one
+   *  customer, deliberately not touching accountsSignal (that's reserved
+   *  for the bank-wide "All Accounts" list this service also backs). */
+  getByUserId(userId: number): Observable<AccountResponse[]> {
+    return this.http
+      .get<ApiResponse<AccountResponse[]>>(`${BASE}${API.adminAccounts.all}`, {
+        params: { userId: userId.toString() },
+      })
+      .pipe(map((res) => res.data));
   }
 }

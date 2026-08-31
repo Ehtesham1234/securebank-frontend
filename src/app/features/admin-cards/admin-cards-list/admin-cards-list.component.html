@@ -1,0 +1,66 @@
+<h1 class="font-display text-2xl font-medium text-ink-900">All cards</h1>
+<p class="mt-1 text-sm text-ink-400">Every card, across every customer.</p>
+
+<div class="mt-4 flex flex-wrap items-center gap-2">
+  <select
+    class="rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-900"
+    [value]="searchField()"
+    (change)="onSearchFieldChange($event)"
+  >
+    <option value="search">Name or email</option>
+    <option value="userId">User ID</option>
+    <option value="cardId">Card ID</option>
+    <option value="maskedNumber">Card number</option>
+  </select>
+  <input
+    pInputText
+    placeholder="Search..."
+    class="w-64"
+    [value]="searchValue()"
+    (input)="onSearchValueInput($event)"
+    (keyup.enter)="submitSearch()"
+  />
+  <p-button label="Search" (onClick)="submitSearch()" />
+  <p-button label="Clear" severity="secondary" [text]="true" (onClick)="clearSearch()" />
+</div>
+
+<div class="mt-6 overflow-hidden rounded-md border border-ink-100 bg-white">
+  <p-table [value]="service.cards()" [loading]="service.loading()" dataKey="id" styleClass="w-full">
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="text-left">User</th>
+        <th class="text-left">Card number</th>
+        <th class="text-left">Type</th>
+        <th class="text-left">Status</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-card>
+      <tr>
+        <td>User #{{ card.userId }}</td>
+        <td class="font-ledger">{{ card.maskedNumber }}</td>
+        <td>{{ card.cardType === 'CREDIT_CARD' ? 'Credit' : 'Debit' }}</td>
+        <td>
+          <p-tag [value]="card.status" [severity]="statusSeverity(card.status)" />
+        </td>
+        <td class="text-right">
+          @if (card.status === 'ACTIVE' || card.status === 'BLOCKED') {
+            <p-button
+              [label]="card.status === 'BLOCKED' ? 'Unblock' : 'Block'"
+              [severity]="card.status === 'BLOCKED' ? 'success' : 'warn'"
+              size="small"
+              [text]="true"
+              [loading]="actionInFlight() === card.id"
+              (onClick)="toggleBlock(card)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="py-8 text-center text-sm text-ink-400">No cards found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

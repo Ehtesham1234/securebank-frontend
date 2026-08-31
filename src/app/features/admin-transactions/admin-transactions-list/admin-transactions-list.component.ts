@@ -3,23 +3,25 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TransactionResponse, TransactionStatus } from '../../../core/models/account.model';
 import { NotificationService } from '../../../core/services/notification.service';
-import { AdminTransactionsService } from '../admin-transactions.service';
+import { AdminTransactionSearchField, AdminTransactionsService } from '../admin-transactions.service';
 
 @Component({
   selector: 'sb-admin-transactions-list',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, TableModule, SharedModule, ButtonModule, DialogModule, TagModule],
+  imports: [CurrencyPipe, DatePipe, TableModule, SharedModule, ButtonModule, DialogModule, TagModule ,InputTextModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-transactions-list.component.html',
 })
 export class AdminTransactionsListComponent implements OnInit {
   readonly service = inject(AdminTransactionsService);
   private readonly notify = inject(NotificationService);
-
+  readonly searchField = signal<AdminTransactionSearchField>('search');
+  readonly searchValue = signal('');
   /** Transaction pending reverse confirmation — same pattern as Admin
    *  Accounts' close confirmation: a significant action gets a confirm
    *  step rather than firing directly from the row button. */
@@ -29,7 +31,22 @@ export class AdminTransactionsListComponent implements OnInit {
   ngOnInit(): void {
     this.service.refresh();
   }
+  onSearchFieldChange(event: Event): void {
+    this.searchField.set((event.target as HTMLSelectElement).value as AdminTransactionSearchField);
+  }
 
+  onSearchValueInput(event: Event): void {
+    this.searchValue.set((event.target as HTMLInputElement).value);
+  }
+
+  submitSearch(): void {
+    this.service.refresh(this.searchField(), this.searchValue());
+  }
+
+  clearSearch(): void {
+    this.searchValue.set('');
+    this.service.refresh();
+  }
   statusSeverity(status: TransactionStatus): 'success' | 'danger' | 'secondary' {
     switch (status) {
       case 'SUCCESS':

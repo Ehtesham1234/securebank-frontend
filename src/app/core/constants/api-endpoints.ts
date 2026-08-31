@@ -53,6 +53,9 @@ export const API = {
     // way /teller/kyc/pending exists for KYC, even though TELLER can
     // approve/reject by id. See admin-loans.service.ts.
     byStatus: (status: string) => `/admin/loans/status/${status}`,
+        // General admin listing (supports ?userId= filter), as opposed to the
+    // status-scoped one above.
+    adminAll: '/admin/loans',
   },
   adminAccounts: {
     all: '/admin/accounts',
@@ -63,6 +66,15 @@ export const API = {
   adminTransactions: {
     all: '/admin/transactions',
     reverse: (id: number) => `/admin/transactions/${id}/reverse`,
+  },
+    adminUsers: {
+    list: '/admin/users',
+    byId: (id: number) => `/admin/users/${id}`,
+  },
+    adminCards: {
+    all: '/cards/admin',
+    block: (cardId: number) => `/cards/admin/${cardId}/block`,
+    unblock: (cardId: number) => `/cards/admin/${cardId}/unblock`,
   },
     ai: {
     // Note: unlike every other endpoint in this file, ai-service's
