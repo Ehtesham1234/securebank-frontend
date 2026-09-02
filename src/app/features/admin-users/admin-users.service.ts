@@ -64,6 +64,18 @@ export class AdminUsersService {
       .pipe(map((res) => res.data));
   }
 
+  suspend(id: number): Observable<UserResponse> {
+    return this.http
+      .put<ApiResponse<UserResponse>>(`${BASE}${API.adminUsers.suspend(id)}`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  reactivate(id: number): Observable<UserResponse> {
+    return this.http
+      .put<ApiResponse<UserResponse>>(`${BASE}${API.adminUsers.reactivate(id)}`, {})
+      .pipe(map((res) => res.data));
+  }
+
   private fetchPage(page: number, search: string): Observable<PageResponse<UserResponse>> {
     const params: Record<string, string> = { page: page.toString() };
     if (search) {

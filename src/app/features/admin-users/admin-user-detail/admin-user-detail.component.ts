@@ -65,7 +65,7 @@ export class AdminUserDetailComponent implements OnInit {
   readonly cards = signal<CardResponse[]>([]);
   readonly cardsLoading = signal(true);
   readonly cardActionInFlight = signal<number | null>(null);
-
+  readonly userActionInFlight = signal(false);
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) {
@@ -135,7 +135,22 @@ export class AdminUserDetailComponent implements OnInit {
       error: () => this.accountActionInFlight.set(null),
     });
   }
+  toggleUserSuspend(): void {
+    const u = this.user();
+    if (!u || u.id == null) return;
 
+    this.userActionInFlight.set(true);
+    const action$ =
+      u.userStatus === 'SUSPENDED' ? this.usersService.reactivate(u.id) : this.usersService.suspend(u.id);
+
+    action$.subscribe({
+      next: (updated) => {
+        this.userActionInFlight.set(false);
+        this.user.set(updated);
+      },
+      error: () => this.userActionInFlight.set(false),
+    });
+  }
   openCloseConfirm(account: AccountResponse): void {
     this.closeTarget.set(account);
   }

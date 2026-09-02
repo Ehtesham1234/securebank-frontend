@@ -70,6 +70,8 @@ export const API = {
     adminUsers: {
     list: '/admin/users',
     byId: (id: number) => `/admin/users/${id}`,
+    suspend: (id: number) => `/admin/users/${id}/suspend`,
+    reactivate: (id: number) => `/admin/users/${id}/reactivate`,
   },
     adminCards: {
     all: '/cards/admin',
